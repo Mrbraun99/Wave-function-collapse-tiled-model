@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="shortcut icon" type="image/png" href="assets/favicon.png" />
+    <meta charset="utf-8" />
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.2/lib/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/Mrbraun99/Utils/FnLib/dist/main.js"></script>
+    <script src="scripts/main.js"></script>
+    <script src="scripts/tile.js"></script>
+    <script src="scripts/connection_editor.js"></script>
+    <script src="scripts/viewport.js"></script>
+
+    <script>
+        document.oncontextmenu = function () {
+            return false;
+        }
+
+        window.addEventListener('keypress', (event) => {
+            if (event.code == "Space") event.preventDefault();
+        });
+
+
+    </script>
+    <style>
+        .github-corner:hover .octo-arm {
+            animation: octocat-wave 560ms ease-in-out;
+        }
+
+        @keyframes octocat-wave {
+
+            0%,
+            100% {
+                transform: rotate(0);
+            }
+
+            20%,
+            60% {
+                transform: rotate(-25deg);
+            }
+
+            40%,
+            80% {
+                transform: rotate(10deg);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .github-corner:hover .octo-arm {
+                animation: none;
+            }
+
+            .github-corner .octo-arm {
+                animation: octocat-wave 560ms ease-in-out;
+            }
+        }
+    </style>
+
+    <title>Wave function collapse (tiled model)</title>
+</head>
+
+<body style="max-width: 1400px">
+    <a href="https://github.com/Mrbraun99/Wave-function-collapse-tiled-model" class="github-corner" aria-label="View source on GitHub">
+        <svg width="100" height="100" viewBox="0 0 250 250" style="fill: #151513; color: #fff; position: absolute; top: 0; border: 0; right: 0" aria-hidden="true">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z" />
+            <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px" class="octo-arm" />
+            <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body" />
+        </svg>
+    </a>
+
+    <template id="available-tile-template">
+        <div class="available-tile" style="position: relative; width: 60px; height: 60px">
+            <img style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px" />
+            <div class="delete-overlay">
+                <i class="fas fa-trash" style="color: white; font-size: 28px"></i>
+            </div>
+        </div>
+    </template>
+
+    <template id="neighbour-tile-template">
+        <div class="neighbour-tile" style="position: relative; width: var(--tile-size); height: var(--tile-size)">
+            <img style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px" />
+            <div class="delete-overlay">
+                <i class="fas fa-trash" style="color: white; font-size: 28px"></i>
+            </div>
+        </div>
+    </template>
+
+    <template id="plus-tile-template">
+        <div class="plus-tile">
+            <i class="fas fa-plus" style="color: #04466D; font-size: 28px;"></i>
+        </div>
+    </template>
+
+    <template id="modal-tile-template">
+        <div class="modal-tile" style="position: relative; width: 60px; height: 60px">
+            <img style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px" />
+            <div class="confirm-overlay">
+                <i class="fas fa-check" style="color: white; font-size: 28px"></i>
+            </div>
+        </div>
+    </template>
+
+    <h1 style="font-size: 60px">Wave function collapse (tiled model)</h1>
+
+    <h1 style="font-size: 35px">About project</h1>
+
+    <p>
+        This project explores procedural generation using the Wave Function Collapse algorithm. Once you upload your desired tiles using the <b>Upload tile images</b> button, the program automatically generates their rotated versions, filters out any duplicates, and analyzes their border pixels to detect which tiles can be placed next to each other. Although the program tries to generate these rules automatically, you have the option to manually adjust them using the built-in editor, which will be discussed in the Editor section below. To help you get started quickly, I've prepared a demo tileset that you can load by clicking the button below. The tiles used in this demo are from <a href="https://www.youtube.com/watch?v=rI_y2GAlQFM" target="_blank" style="color: #04466D; text-decoration: underline;">The Coding Train</a>, where you can also find an excellent video explaining the algorithm in detail.
+    </p>
+
+    <button id="load-demo-button" class="button" style="font-size: 16px; margin-bottom: 20px;"> Load demo </button>
+
+    <p>
+        Once you’ve loaded the demo, click the <b>Generate</b> button that appears to start the procedural generation. The project features a dynamic, chunk-based generation system, resulting in a virtually infinite world. You can freely explore the map by holding down the right mouse button to pan around the canvas.
+    </p>
+
+    <h1 style="font-size: 35px">Editor</h1>
+
+    <p>
+        After you upload your tiles, all of the original tiles along with their generated rotated versions will be displayed on the screen. By clicking on any of these tiles, you can bring up the built-in connection editor. If there is a tile you don't need—for example, if you don't want to use a specific rotated version, or if the program failed to detect a duplicate—you can disable it completely. To do this, simply click on the large tile displayed in the center of the editor. This acts as a toggle, allowing you to easily disable or re-enable the selected tile. Surrounding the center tile, you will see four distinct grids corresponding to the four directions. These sections list all the valid neighbour tiles that are allowed to be placed next to the currently selected tile in that specific direction during the generation process. If you want to manually allow a new connection, click the plus button in any of these directional grids. This opens a modal where you can select the additional tiles you want to permit; simply hit the <b>Add</b> button to include them. Conversely, to remove an existing connection, simply click on the unwanted tile in the directional grid. The tile will remain visible but will display a trash bin icon, indicating that the connection is disabled. This action works as a toggle as well, so clicking the disabled tile again will remove the icon and restore the connection. If you want to remove the tile completely from the grid, hold down the CTRL key while clicking. It is important to note that all connection modifications are perfectly symmetrical. Whenever you add or remove a neighbor, the program automatically updates the corresponding tile in the opposite direction, ensuring that no asymmetrical rules can occur.
+    </p>
+
+    <p>
+        Once you are satisfied with your manual adjustments, you can export your entire configuration to a JSON file. This saves you from having to set up the rules again from scratch next time. You can easily load this configuration later using the <b>Import</b> button. It is important to note that when importing a configuration file, the program relies strictly on the rules defined in the file, and no automatic matching or calculations are performed.
+    </p>
+
+    <input id="img-file-input" type="file" multiple hidden />
+
+    <input id="json-file-input" type="file" hidden />
+
+    <button class="button" onclick="document.getElementById('img-file-input').click()">
+        Upload tile images
+    </button>
+
+    <button class="button" onclick="document.getElementById('json-file-input').click()">
+        Import
+    </button>
+
+    <div id="available-tile-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; margin-bottom: 20px"></div>
+
+    <div id="connection-editor-container" style="display: none">
+        <div id="connection-editor" style="display: none">
+            <div style="display: flex; gap: 20px; margin-top: 20px; margin-bottom: 20px">
+                <button class="button" onclick="document.getElementById('connection-editor').style.display = 'none'">
+                    <i class="fa fa-angle-up"></i>
+                    Hide editor
+                </button>
+
+                <div id="editor-grid" style="display: grid">
+                    <div></div>
+                    <div class="neighbour-grid" id="grid-up"></div>
+                    <div></div>
+
+                    <div class="neighbour-grid" id="grid-left"></div>
+
+                    <div id="editor-grid-center" style="position: relative; width: 100px; height: 100px">
+                        <img style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px" />
+                        <div class="delete-overlay">
+                            <i class="fas fa-trash" style="color: white; font-size: 28px"></i>
+                        </div>
+                    </div>
+
+                    <div class="neighbour-grid" id="grid-right"></div>
+
+                    <div></div>
+                    <div class="neighbour-grid" id="grid-down"></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+
+        <button class="button" onclick="ConnectionEditor.export()">
+            Export
+        </button>
+
+        <button class="button" id="generate-btn">
+            Generate
+        </button>
+
+        <div id="canvas-parent" style="margin-top:20px">
+        </div>
+    </div>
+
+    <div id="modal-overlay" style="display: none;" onclick="if(event.target == this) this.style.display='none'">
+        <div id="modal-content">
+            <div id="modal-tile-container" style="display: flex; flex-wrap: wrap; gap: 10px">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button class="button" id="modal-add-button">
+                    Add
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
