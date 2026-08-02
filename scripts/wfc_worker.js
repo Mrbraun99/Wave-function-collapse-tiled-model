@@ -53,7 +53,7 @@ function solve(grid, connections) {
 
                 if (options == 0n) return;
 
-                grid[y][x] = FnLib.Bit.hasOnlyOneBitSet(options) ? [FnLib.Bit.indexes(options)[0]] : options;
+                grid[y][x] = options;
             }
         }
     }
